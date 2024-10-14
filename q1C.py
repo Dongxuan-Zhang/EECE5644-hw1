@@ -4,56 +4,56 @@ from scipy.stats import multivariate_normal
 import pandas as pd
 
 # -----------------------------
-# 1. 生成数据集
+# 1. Generate dataset
 # -----------------------------
 
-# 设置随机种子以保证结果可重复
+# Set random seed to ensure reproducibility
 np.random.seed(0)
 
-# 定义类别先验概率
+# Define class prior probabilities
 P_L0 = 0.35
 P_L1 = 0.65
 
-# 总样本数
+# Total number of samples
 N = 10000
 
-# 每个类别的样本数
+# Number of samples for each class
 N_L0 = int(N * P_L0)
 N_L1 = N - N_L0
 
-# 定义每个类别的均值和协方差矩阵
+# Define mean and covariance matrix for each class
 mu_0 = np.array([0, 0, 0, 0])
 mu_1 = np.array([1, 1, 1, 1])
 
-# 随机生成正定协方差矩阵
+# Randomly generate positive definite covariance matrices
 A = np.random.randn(4,4)
-Sigma_0 = np.dot(A, A.T)  # 保证协方差矩阵是正定的
+Sigma_0 = np.dot(A, A.T)  # Ensure the covariance matrix is positive definite
 B = np.random.randn(4,4)
 Sigma_1 = np.dot(B, B.T)
 
-# 生成样本
+# Generate samples
 X_L0 = np.random.multivariate_normal(mu_0, Sigma_0, N_L0)
 X_L1 = np.random.multivariate_normal(mu_1, Sigma_1, N_L1)
 
-# 合并样本和标签
+# Combine samples and labels
 X = np.vstack((X_L0, X_L1))
 L = np.hstack((np.zeros(N_L0), np.ones(N_L1)))
 
 # -----------------------------
-# 2. 正确模型的最小期望风险分类器
+# 2. Minimum expected risk classifier for the correct model
 # -----------------------------
 
-# 计算所有样本的似然（正确模型）
+# Calculate likelihood for all samples (correct model)
 p_x_given_L0 = multivariate_normal.pdf(X, mean=mu_0, cov=Sigma_0)
 p_x_given_L1 = multivariate_normal.pdf(X, mean=mu_1, cov=Sigma_1)
 
-# 计算似然比
+# Calculate likelihood ratio
 likelihood_ratio = p_x_given_L1 / p_x_given_L0
 
-# 定义 gamma 值
+# Define gamma values
 gamma_values = np.logspace(-3, 3, num=1000)
 
-# 存储结果的列表
+# Lists to store results
 TPR_list = []
 FPR_list = []
 FNR_list = []
@@ -78,43 +78,43 @@ for gamma in gamma_values:
     FNR_list.append(FNR)
     P_error_list.append(P_error)
 
-# 转换为 numpy 数组
+# Convert to numpy arrays
 gamma_values = np.array(gamma_values)
 TPR_list = np.array(TPR_list)
 FPR_list = np.array(FPR_list)
 P_error_list = np.array(P_error_list)
 
-# 找到最小错误概率
+# Find minimum error probability
 min_error_index = np.argmin(P_error_list)
 P_min_error = P_error_list[min_error_index]
 gamma_min = gamma_values[min_error_index]
 TPR_min = TPR_list[min_error_index]
 FPR_min = FPR_list[min_error_index]
 
-# 计算理论最优阈值
+# Calculate theoretical optimal threshold
 gamma_theoretical = P_L0 / P_L1
 
-# 找到理论最优阈值对应的索引
+# Find the index of the theoretical optimal threshold
 index_theoretical = np.argmin(np.abs(gamma_values - gamma_theoretical))
 TPR_theoretical = TPR_list[index_theoretical]
 FPR_theoretical = FPR_list[index_theoretical]
 
 # -----------------------------
-# 3. 朴素贝叶斯分类器的实现
+# 3. Implementation of Naive Bayes classifier
 # -----------------------------
 
-# 提取对角协方差矩阵
+# Extract diagonal covariance matrices
 Sigma_0_diag = np.diag(np.diag(Sigma_0))
 Sigma_1_diag = np.diag(np.diag(Sigma_1))
 
-# 计算所有样本的似然（朴素贝叶斯假设）
+# Calculate likelihood for all samples (Naive Bayes assumption)
 p_x_given_L0_NB = multivariate_normal.pdf(X, mean=mu_0, cov=Sigma_0_diag)
 p_x_given_L1_NB = multivariate_normal.pdf(X, mean=mu_1, cov=Sigma_1_diag)
 
-# 计算似然比
+# Calculate likelihood ratio
 likelihood_ratio_NB = p_x_given_L1_NB / p_x_given_L0_NB
 
-# 存储结果的列表
+# Lists to store results
 TPR_list_NB = []
 FPR_list_NB = []
 FNR_list_NB = []
@@ -139,12 +139,12 @@ for gamma in gamma_values:
     FNR_list_NB.append(FNR_NB)
     P_error_list_NB.append(P_error_NB)
 
-# 转换为 numpy 数组
+# Convert to numpy arrays
 TPR_list_NB = np.array(TPR_list_NB)
 FPR_list_NB = np.array(FPR_list_NB)
 P_error_list_NB = np.array(P_error_list_NB)
 
-# 找到最小错误概率
+# Find minimum error probability
 min_error_index_NB = np.argmin(P_error_list_NB)
 P_min_error_NB = P_error_list_NB[min_error_index_NB]
 gamma_min_NB = gamma_values[min_error_index_NB]
@@ -152,43 +152,43 @@ TPR_min_NB = TPR_list_NB[min_error_index_NB]
 FPR_min_NB = FPR_list_NB[min_error_index_NB]
 
 # -----------------------------
-# 4. Fisher 线性判别分析（LDA）分类器的实现
+# 4. Implementation of Fisher Linear Discriminant Analysis (LDA) classifier
 # -----------------------------
 
-# 分别获取每个类别的样本
+# Get samples for each class separately
 X_L0 = X[L == 0]
 X_L1 = X[L == 1]
 
-# 估计类别条件均值
+# Estimate class conditional means
 mu_0_est = np.mean(X_L0, axis=0)
 mu_1_est = np.mean(X_L1, axis=0)
 
-# 估计类别条件协方差矩阵
+# Estimate class conditional covariance matrices
 Sigma_0_est = np.cov(X_L0, rowvar=False)
 Sigma_1_est = np.cov(X_L1, rowvar=False)
 
-# 类别样本数
+# Number of samples in each class
 n0 = X_L0.shape[0]
 n1 = X_L1.shape[0]
 
-# 类内散布矩阵
+# Within-class scatter matrix
 S_W = (n0 - 1) * Sigma_0_est + (n1 - 1) * Sigma_1_est
 
-# 类间散布矩阵
+# Between-class scatter matrix
 mean_diff = (mu_0_est - mu_1_est).reshape(-1, 1)
 S_B = np.dot(mean_diff, mean_diff.T)
 
-# 计算投影权重向量
+# Calculate projection weight vector
 S_W_inv = np.linalg.inv(S_W)
 w_LDA = np.dot(S_W_inv, (mu_1_est - mu_0_est))
 
-# 投影
+# Projection
 y = np.dot(X, w_LDA)
 
-# 定义阈值范围
+# Define threshold range
 tau_values = np.linspace(np.min(y), np.max(y), num=1000)
 
-# 存储结果的列表
+# Lists to store results
 TPR_list_LDA = []
 FPR_list_LDA = []
 FNR_list_LDA = []
@@ -213,13 +213,13 @@ for tau in tau_values:
     FNR_list_LDA.append(FNR_LDA)
     P_error_list_LDA.append(P_error_LDA)
 
-# 转换为 numpy 数组
+# Convert to numpy arrays
 P_error_list_LDA = np.array(P_error_list_LDA)
 tau_values = np.array(tau_values)
 TPR_list_LDA = np.array(TPR_list_LDA)
 FPR_list_LDA = np.array(FPR_list_LDA)
 
-# 找到最小错误概率
+# Find minimum error probability
 min_error_index_LDA = np.argmin(P_error_list_LDA)
 P_min_error_LDA = P_error_list_LDA[min_error_index_LDA]
 tau_min_LDA = tau_values[min_error_index_LDA]
@@ -227,22 +227,22 @@ TPR_min_LDA = TPR_list_LDA[min_error_index_LDA]
 FPR_min_LDA = FPR_list_LDA[min_error_index_LDA]
 
 # -----------------------------
-# 5. 绘制并比较所有分类器的 ROC 曲线
+# 5. Plot and compare ROC curves for all classifiers
 # -----------------------------
 
 plt.figure(figsize=(10,8))
-# 正确模型分类器
+# Original model classifier
 plt.plot(FPR_list, TPR_list, label='Original ROC')
-# 朴素贝叶斯分类器
+# Naive Bayes classifier
 plt.plot(FPR_list_NB, TPR_list_NB, label='NB ROC', linestyle='--')
-# LDA 分类器
+# LDA classifier
 plt.plot(FPR_list_LDA, TPR_list_LDA, label='LDA ROC', linestyle='-.')
 
-# 标记各自的最小错误概率点
+# Mark minimum error probability points for each classifier
 plt.scatter(FPR_min, TPR_min, color='blue', marker='o', label='Min(original)')
 plt.scatter(FPR_min_NB, TPR_min_NB, color='red', marker='x', s=100, label='Min(NB)')
 plt.scatter(FPR_min_LDA, TPR_min_LDA, color='purple', marker='^', s=100, label='Min(LDA)')
-# 标记理论最优阈值点
+# Mark theoretical optimal threshold point
 plt.scatter(FPR_theoretical, TPR_theoretical, color='green', marker='s', s=100, label='Theoratical')
 
 plt.xlabel('FPR (P(D=1|L=0))')
@@ -253,7 +253,7 @@ plt.grid(True)
 plt.show()
 
 # -----------------------------
-# 6. 计算并比较每个分类器的最小错误概率
+# 6. Calculate and compare minimum error probability for each classifier
 # -----------------------------
 
 print("===== Original Model =====")
@@ -280,16 +280,16 @@ print(f"LDA TPR: {TPR_min_LDA}")
 print(f"LDA FPR: {FPR_min_LDA}")
 
 # -----------------------------
-# 7. 性能分析和结果讨论
+# 7. Performance analysis and result discussion
 # -----------------------------
 
-# 比较各分类器的最小错误概率
+# Compare minimum error probabilities of each classifier
 print("\n===== Min error probability =====")
 print(f"Original: {P_min_error}")
 print(f"NB: {P_min_error_NB}")
 print(f"LDA: {P_min_error_LDA}")
 
-# 绘制错误概率与Gamma的关系图
+# Plot error probability vs Gamma
 plt.figure(figsize=(10, 6))
 plt.plot(tau_values, P_error_list_LDA, label='Errors')
 plt.scatter(tau_min_LDA, P_error_list_LDA[min_error_index_LDA], color='red', marker='o', label='Minimum Error')

@@ -2,35 +2,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-# 加载数据集
+# Load the dataset
 dataset = np.load('dataset_Q2.npz')
 data = dataset['data']
 labels = dataset['labels']
 
-# 样本总数
+# Total number of samples
 num_samples = len(data)
 
-# 定义均值向量
+# Define mean vectors
 mu1 = np.array([0, 0, 0])
 mu2 = np.array([2.5, 0, 0])
 mu3 = np.array([0, 2.5, 0])
 mu4 = np.array([2.5, 2.5, 0])
 
-# 定义先验概率
+# Define prior probabilities
 P_w1 = 0.3
 P_w2 = 0.4
 P_w3 = 0.3
 
-# 最小错误概率的贝叶斯决策规则（使用0-1损失）
+# Minimum error probability Bayesian decision rule (using 0-1 loss)
 def decision_rule_bayes(x):
-    # 计算属于每个类别的条件概率密度
+    # Calculate conditional probability density for each class
     p1 = np.exp(-0.5 * np.sum((x - mu1) ** 2)) * P_w1
     p2 = np.exp(-0.5 * np.sum((x - mu2) ** 2)) * P_w2
     p3 = 0.5 * (np.exp(-0.5 * np.sum((x - mu3) ** 2)) + np.exp(-0.5 * np.sum((x - mu4) ** 2))) * P_w3
-    # 根据最大化后验概率来做决策
+    # Make decision based on maximizing posterior probability
     return np.argmax([p1, p2, p3]) + 1
 
-# 分类10K样本并统计每个决策-标签对
+# Classify 10K samples and count each decision-label pair
 confusion_matrix = np.zeros((3, 3))
 predictions = []
 for i in range(num_samples):
@@ -40,14 +40,14 @@ for i in range(num_samples):
     predictions.append(predicted_label)
     confusion_matrix[predicted_label - 1, true_label - 1] += 1
 
-print("confusion_matrix：")
+print("Confusion matrix:")
 print(confusion_matrix / num_samples)
 
-# 三维散点图显示数据，用不同的形状和颜色区分正确与否
+# 3D scatter plot to display data, distinguishing correct and incorrect classifications with different shapes and colors
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
-# 创建图例句柄
+# Create legend handles
 legend_elements = [
     plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='g', markersize=10, label='Class 1 (Correct)'),
     plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='r', markersize=10, label='Class 1 (Incorrect)'),
@@ -57,15 +57,15 @@ legend_elements = [
     plt.Line2D([0], [0], marker='s', color='w', markerfacecolor='r', markersize=10, label='Class 3 (Incorrect)')
 ]
 
-# 绘制样本
+# Plot samples
 for i in range(num_samples):
     x = data[i]
     true_label = labels[i]
     predicted_label = predictions[i]
     if true_label == predicted_label:
-        color = 'g'  # 正确分类为绿色
+        color = 'g'  # Correct classification in green
     else:
-        color = 'r'  # 错误分类为红色
+        color = 'r'  # Incorrect classification in red
 
     if true_label == 1:
         marker = 'o'
@@ -76,7 +76,7 @@ for i in range(num_samples):
 
     ax.scatter(x[0], x[1], x[2], c=color, marker=marker)
 
-# 设置图例和标签
+# Set legend and labels
 ax.set_xlabel('X1')
 ax.set_ylabel('X2')
 ax.set_zlabel('X3')

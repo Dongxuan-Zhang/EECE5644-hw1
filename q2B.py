@@ -2,21 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-# 加载数据集
+# Load the dataset
 dataset = np.load('dataset_Q2.npz')
 data = dataset['data']
 labels = dataset['labels']
 
-# 样本总数
+# Total number of samples
 num_samples = len(data)
 
-# 定义均值向量
+# Define mean vectors
 mu1 = np.array([1, 1, 1])
 mu2 = np.array([2, 2, 2])
 mu3 = np.array([3, 3, 3])
 mu4 = np.array([4, 4, 4])
 
-# 定义损失矩阵
+# Define loss matrices
 loss_matrix_10 = np.array([[0, 10, 10],
                            [1, 0, 10],
                            [1, 1, 0]])
@@ -25,19 +25,19 @@ loss_matrix_100 = np.array([[0, 100, 100],
                             [1, 0, 100],
                             [1, 1, 0]])
 
-# 最小错误概率的决策规则（考虑损失矩阵）
+# Minimum error probability decision rule (considering loss matrix)
 def decision_rule(x, loss_matrix):
-    # 计算属于每个类别的条件概率密度
+    # Calculate conditional probability density for each class
     p1 = np.exp(-0.5 * np.sum((x - mu1) ** 2))
     p2 = np.exp(-0.5 * np.sum((x - mu2) ** 2))
     p3 = 0.5 * (np.exp(-0.5 * np.sum((x - mu3) ** 2)) + np.exp(-0.5 * np.sum((x - mu4) ** 2)))
     probs = np.array([p1, p2, p3])
-    # 计算期望损失
+    # Calculate expected loss
     risks = loss_matrix @ probs
-    # 返回最小风险对应的类别
+    # Return the class corresponding to the minimum risk
     return np.argmin(risks) + 1
 
-# 使用损失矩阵Λ_10分类10K样本并统计每个决策-标签对
+# Classify 10K samples using loss matrix Λ_10 and count each decision-label pair
 confusion_matrix_10 = np.zeros((3, 3))
 predictions_10 = []
 for i in range(num_samples):
@@ -47,10 +47,10 @@ for i in range(num_samples):
     predictions_10.append(predicted_label)
     confusion_matrix_10[predicted_label - 1, true_label - 1] += 1
 
-print("confusion matrix(loss matrix Λ_10)：")
+print("Confusion matrix (loss matrix Λ_10):")
 print(confusion_matrix_10 / num_samples)
 
-# 使用损失矩阵Λ_100分类10K样本并统计每个决策-标签对
+# Classify 10K samples using loss matrix Λ_100 and count each decision-label pair
 confusion_matrix_100 = np.zeros((3, 3))
 predictions_100 = []
 for i in range(num_samples):
@@ -60,13 +60,13 @@ for i in range(num_samples):
     predictions_100.append(predicted_label)
     confusion_matrix_100[predicted_label - 1, true_label - 1] += 1
 
-print("confusion matrix(loss matrix Λ_100)：")
+print("Confusion matrix (loss matrix Λ_100):")
 print(confusion_matrix_100 / num_samples)
 
-# 创建两个子图，分别显示使用Λ_10和Λ_100的分类结果
+# Create two subplots to display classification results using Λ_10 and Λ_100
 fig = plt.figure(figsize=(15, 6))
 
-# 子图1：使用Λ_10的分类结果
+# Subplot 1: Classification results using Λ_10
 ax1 = fig.add_subplot(121, projection='3d')
 legend_elements = [
     plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='g', markersize=10, label='Class 1 (Correct)'),
@@ -82,9 +82,9 @@ for i in range(num_samples):
     true_label = labels[i]
     predicted_label = predictions_10[i]
     if true_label == predicted_label:
-        color = 'g'  # 正确分类为绿色
+        color = 'g'  # Correct classification in green
     else:
-        color = 'r'  # 错误分类为红色
+        color = 'r'  # Incorrect classification in red
 
     if true_label == 1:
         marker = 'o'
@@ -101,7 +101,7 @@ ax1.set_zlabel('X3')
 ax1.set_title('3D Scatter Plot of Data Classification Results (Λ_10)')
 ax1.legend(handles=legend_elements, loc='upper right')
 
-# 子图2：使用Λ_100的分类结果
+# Subplot 2: Classification results using Λ_100
 ax2 = fig.add_subplot(122, projection='3d')
 
 for i in range(num_samples):
@@ -109,9 +109,9 @@ for i in range(num_samples):
     true_label = labels[i]
     predicted_label = predictions_100[i]
     if true_label == predicted_label:
-        color = 'g'  # 正确分类为绿色
+        color = 'g'  # Correct classification in green
     else:
-        color = 'r'  # 错误分类为红色
+        color = 'r'  # Incorrect classification in red
 
     if true_label == 1:
         marker = 'o'
