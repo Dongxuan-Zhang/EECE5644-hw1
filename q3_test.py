@@ -8,7 +8,10 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+# -----------------------------
+# This version was finifhsed next morning after the submission.
+# This version had better accuracy.
+# -----------------------------
 # Load datasets
 wine_data = pd.read_csv("./winequality-white.csv", sep=';')
 X_wine = wine_data.iloc[:, :-1]
